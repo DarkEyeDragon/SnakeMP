@@ -25,7 +25,7 @@ socket.on("init", (data) => {
         }
         for (let snake of snakeList.values()) {
             console.log(snake);
-            snake.drawPlayerName(snake.displayName);
+            snake.drawDisplayName(snake.displayName);
             snake.draw();
         }
         food.draw();

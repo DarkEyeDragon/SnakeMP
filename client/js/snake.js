@@ -41,32 +41,16 @@ export default class Snake {
             y: this.snake[0].y
         };
     }
-    drawPlayerName(playerName){
+    drawDisplayName(){
         this.ctx.fillStyle = "black";
         this.ctx.font = "15px Arial";
         this.ctx.textAlign = "center";
-        this.ctx.fillText(playerName, this.snake[0].x, this.snake[0].y-10);
+        this.ctx.fillText(this.displayName, this.snake[0].x, this.snake[0].y-10);
         //this.ctx.fillText(playerName,this.snake.x-10,this.snake.y-10);
     }
-    getNewHead() {
-        return {
-            x: snakeX,
-            y: snakeY
-        };
+    setDisplayName(name){
+        this.displayName = name;
     }
-
-    hitsBorder(){
-        if(this.snake[0].x > this.canvas.width-SCALE || this.snake[0].x < 0) return true;
-        return this.snake[0].y > this.canvas.height-SCALE || this.snake[0].y < 0;
-    }
-    hitsSelf(){
-
-    }
-
-    addBody(amount = 1) {
-        addBody = false;
-    }
-
     getLength() {
         return this.snake.length;
     }
