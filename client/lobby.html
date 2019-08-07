@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Snake | Lobby</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+            crossorigin="anonymous">
+
+    </script>
+</head>
+<body>
+<form>
+    <label>
+        Lobby name
+        <input id="lobbyName" type="text"/>
+    </label>
+    <label>
+        Max players
+        <input id="maxPlayers" type="number" min="2" max="8" value="4"/>
+    </label>
+    <label>
+        Direct invite
+        <input id="directInvite" type="text"/>
+    </label>
+    <button type="submit" onclick="startGame()">Start</button>
+</form>
+<script>
+    let startGame = () => {
+        $("form").submit((event)=> {
+            console.log($(this).serialize());
+            event.preventDefault();
+        });
+    }
+</script>
+</body>
+</html>
