@@ -65,10 +65,12 @@ let food = new Food();
 io.on('connection', (socket) => {
 
     let unique = uniqueId();
-    socket.player = new Player(unique, unique, 16*3, 16*2, color());
+    let playerPosition = Environment.startPosition(SOCKET_LIST.values());
+    console.log(playerPosition);
+    socket.player = new Player(unique, unique, playerPosition.x, playerPosition.y, color());
     SOCKET_LIST.set(unique, socket);
     socket.on('disconnect', () => {
-        SOCKET_LIST.delete(unique);
+        removePlayer(socket.player)
     });
 
     let foodObj = {x: food.x, y: food.y};
@@ -81,7 +83,9 @@ io.on('connection', (socket) => {
         player.direction = data;
     });
 });
-
+const removePlayer = (player)=>{
+    SOCKET_LIST.delete(player.id);
+};
 //Set the game tick to 25fps
 setInterval(() => {
     let segment = [];
@@ -90,16 +94,28 @@ setInterval(() => {
 
         //Player hits border
         if (Environment.hitsBorder(player)) {
-            SOCKET_LIST.delete(player.id);
+            removePlayer(player);
             socket.emit('death', player.score);
             //Player hits food
         }else if(player.snake[0].x === food.x && player.snake[0].y === food.y){
             food.generateRandom();
-            console.log(player.id);
             player.bodyLength++;
             player.score++;
             player.hasEaten(true);
             socket.emit('updateFood', {x: food.x, y: food.y, id: player.id});
+        }
+        let collisionSelf = Environment.hitsSelf(player);
+        let collisionOther = Environment.hitsOther(player,  SOCKET_LIST.values());
+        let hitsSelf = collisionSelf.isCollision;
+        let hitsOther = collisionOther.isCollision;
+        if(hitsSelf || hitsOther){
+            if(hitsOther){
+                console.log(collisionOther.otherPlayer);
+                SOCKET_LIST.get(collisionOther.otherPlayer.id).emit('death', collisionOther.otherPlayer.score);
+                removePlayer(collisionOther.otherPlayer);
+            }
+            removePlayer(player);
+            socket.emit('death', player.score);
         }
         player.updatePosition();
         segment.push(player);
@@ -107,5 +123,6 @@ setInterval(() => {
     for (let socket of SOCKET_LIST.values()) {
         socket.emit('gameTick', segment);
     }
+
 
 }, 1000 / 20);

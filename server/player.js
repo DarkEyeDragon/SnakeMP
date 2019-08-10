@@ -19,10 +19,6 @@ class Player{
         this.bodyLength = 1;
         this.score = 0;
         this.direction = null;
-        this.pressingRight = false;
-        this.pressingLeft = false;
-        this.pressingUp = false;
-        this.pressingDown = false;
         this.color = color;
     }
     updatePosition(){
