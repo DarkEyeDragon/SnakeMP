@@ -10,8 +10,8 @@
     </script>
 </head>
 <body>
-<form>
-    <label>
+<form method="post">
+    <!--<label>
         Lobby name
         <input id="lobbyName" type="text"/>
     </label>
@@ -22,8 +22,11 @@
     <label>
         Direct invite
         <input id="directInvite" type="text"/>
+    </label>-->
+    <label>
+        <input name="username" placeholder="username" autocomplete="false">
     </label>
-    <button type="submit" onclick="startGame()">Start</button>
+    <button type="submit">Start</button>
 </form>
 <script>
     let startGame = () => {

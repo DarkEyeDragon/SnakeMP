@@ -1,4 +1,5 @@
 const createError = require('http-errors');
+const CONSTANTS = require("./server/constants");
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -8,7 +9,7 @@ const uniqueId = require('./server/generateId');
 const color = require('rcolor');
 const Environment = require("./server/environment");
 const Food = require("./server/food");
-const CONSTANTS = require("./server/constants");
+const bodyParser = require("body-parser");
 
 const app = express();
 
@@ -23,16 +24,18 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
+app.use(bodyParser.json());
+
 app.get('/', (req, res)=> {
     res.sendFile(__dirname + '/client/index.html');
 });
 
 app.use(express.static(__dirname + '/client'));
 
-// catch 404 and forward to error handler
+/*// catch 404 and forward to error handler
 app.use(function (req, res, next) {
     next(createError(404));
-});
+});*/
 
 // error handler
 app.use((err, req, res, next)=> {
@@ -45,17 +48,18 @@ app.use((err, req, res, next)=> {
     res.render('error');
 });
 
+//Listen for post data
+app.post('/',(request, res)=>{
+    res.sendFile(__dirname + '/client/index.html');
+    console.log(request.body.username);
+});
+
 http.listen(3000, function () {
     console.log('listening on *:3000');
 });
 
 const SOCKET_LIST = new Map();
 
-
-const ARROW_RIGHT = "ArrowRight";
-const ARROW_LEFT = "ArrowLeft";
-const ARROW_UP = "ArrowUp";
-const ARROW_DOWN = "ArrowDown";
 
 let food = new Food();
 io.on('connection', (socket) => {
@@ -73,7 +77,6 @@ io.on('connection', (socket) => {
     socket.emit('init',  initObj);
     socket.on('keyPress', (data) => {
 
-
         const player = socket.player;
         console.log("============");
         console.log(player);
@@ -82,17 +85,17 @@ io.on('connection', (socket) => {
         player.pressingLeft = false;
         player.pressingUp = false;
         player.pressingDown = false;
-        if (data === ARROW_RIGHT) {
+        if (data === CONSTANTS.ARROW_RIGHT) {
             player.pressingRight = true;
         }
-        if (data === ARROW_LEFT) {
+        if (data === CONSTANTS.ARROW_LEFT) {
             player.pressingLeft = true;
 
         }
-        if (data === ARROW_UP) {
+        if (data === CONSTANTS.ARROW_UP) {
             player.pressingUp = true;
         }
-        if (data === ARROW_DOWN) {
+        if (data === CONSTANTS.ARROW_DOWN) {
             player.pressingDown = true;
         }
     });
@@ -103,8 +106,7 @@ setInterval(() => {
     let segment = [];
     for (let socket of SOCKET_LIST.values()) {
         let player = socket.player;
-        player.updatePosition();
-        segment.push(player);
+
         //Player hits border
         if (Environment.hitsBorder(player)) {
             SOCKET_LIST.delete(player.id);
@@ -118,6 +120,8 @@ setInterval(() => {
             player.hasEaten(true);
             socket.emit('updateFood', {x: food.x, y: food.y, id: player.id});
         }
+        player.updatePosition();
+        segment.push(player);
     }
     for (let socket of SOCKET_LIST.values()) {
         socket.emit('gameTick', segment);
