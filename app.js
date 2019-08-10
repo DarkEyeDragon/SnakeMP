@@ -54,8 +54,8 @@ app.post('/',(request, res)=>{
     console.log(request.body.username);
 });
 
-http.listen(3000, function () {
-    console.log('listening on *:3000');
+http.listen(80, function () {
+    console.log('listening on *:80');
 });
 
 const SOCKET_LIST = new Map();
@@ -89,6 +89,7 @@ const removePlayer = (player)=>{
 //Set the game tick to 25fps
 setInterval(() => {
     let segment = [];
+    let updateFood = false;
     for (let socket of SOCKET_LIST.values()) {
         let player = socket.player;
 
@@ -102,6 +103,9 @@ setInterval(() => {
             player.bodyLength++;
             player.score++;
             player.hasEaten(true);
+            updateFood = true;
+        }
+        if(updateFood){
             socket.emit('updateFood', {x: food.x, y: food.y, id: player.id});
         }
         let collisionSelf = Environment.hitsSelf(player);
@@ -122,6 +126,7 @@ setInterval(() => {
     }
     for (let socket of SOCKET_LIST.values()) {
         socket.emit('gameTick', segment);
+        console.log(JSON.stringify(segment));
     }
 
 
