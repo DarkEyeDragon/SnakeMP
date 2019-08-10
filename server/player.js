@@ -1,4 +1,8 @@
 const CONSTANTS = require("./constants");
+const ARROW_DOWN = CONSTANTS.ARROW_DOWN;
+const ARROW_UP = CONSTANTS.ARROW_UP;
+const ARROW_LEFT = CONSTANTS.ARROW_LEFT;
+const ARROW_RIGHT = CONSTANTS.ARROW_RIGHT;
 let gridSize = CONSTANTS.gridSize;
 
 let hasEaten;
@@ -14,6 +18,7 @@ class Player{
         };
         this.bodyLength = 1;
         this.score = 0;
+        this.direction = null;
         this.pressingRight = false;
         this.pressingLeft = false;
         this.pressingUp = false;
@@ -25,16 +30,16 @@ class Player{
             x: this.snake[0].x,
             y: this.snake[0].y
         };
-        if(this.pressingRight){
+        if(this.direction === ARROW_RIGHT){
             oldHead.x += gridSize;
         }
-        if(this.pressingLeft){
+        if(this.direction === ARROW_LEFT){
             oldHead.x -= gridSize;
         }
-        if(this.pressingUp){
+        if(this.direction === ARROW_UP){
             oldHead.y -= gridSize;
         }
-        if(this.pressingDown){
+        if(this.direction === ARROW_DOWN){
             oldHead.y += gridSize;
         }
         if(!hasEaten){

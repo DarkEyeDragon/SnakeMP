@@ -78,26 +78,7 @@ io.on('connection', (socket) => {
     socket.on('keyPress', (data) => {
 
         const player = socket.player;
-        console.log("============");
-        console.log(player);
-        console.log("============");
-        player.pressingRight = false;
-        player.pressingLeft = false;
-        player.pressingUp = false;
-        player.pressingDown = false;
-        if (data === CONSTANTS.ARROW_RIGHT) {
-            player.pressingRight = true;
-        }
-        if (data === CONSTANTS.ARROW_LEFT) {
-            player.pressingLeft = true;
-
-        }
-        if (data === CONSTANTS.ARROW_UP) {
-            player.pressingUp = true;
-        }
-        if (data === CONSTANTS.ARROW_DOWN) {
-            player.pressingDown = true;
-        }
+        player.direction = data;
     });
 });
 
