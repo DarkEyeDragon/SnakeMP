@@ -1,0 +1,13 @@
+body{
+    margin: 0;
+    padding: 0;
+}
+canvas, img {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    image-rendering: optimizeSpeed;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: pixelated;
+    -ms-interpolation-mode: nearest-neighbor;
+}

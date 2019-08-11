@@ -10,26 +10,26 @@ let food;
 export let SCALE;
 let isSetup = false;
 
-
-socket.on("gameTick", (data) => {
-    if(!isSetup) return;
-    ctx.clearRect(0, 0, 800, 800);
-    snakeList.clear();
-    for (let i = 0; i < data.length; i++) {
-        let snake = new Snake(ctx, data[i]);
-        snakeList.set(data[i].id, snake);
-    }
-    for (let snake of snakeList.values()) {
-        snake.drawDisplayName();
-        snake.draw();
-    }
-    food.draw();
-});
-
 socket.on("init", (data) => {
     SCALE = data.scale;
     console.log("Init");
-    isSetup = true;
+
+
+    socket.on("gameTick", (data) => {
+        //if(!isSetup) return;
+        ctx.clearRect(0, 0, 1920, 960);
+        snakeList.clear();
+        for (let i = 0; i < data.length; i++) {
+            let snake = new Snake(ctx, data[i]);
+            snakeList.set(data[i].id, snake);
+        }
+        for (let snake of snakeList.values()) {
+            console.log(snake);
+            snake.drawDisplayName(snake.displayName);
+            snake.draw();
+        }
+        food.draw();
+    });
 });
 socket.on("updateFood", (data) => {
     food = new Food(ctx, data.x, data.y);

@@ -4,8 +4,8 @@ const CONSTANTS = {
     ARROW_UP: "ArrowUp",
     ARROW_DOWN: "ArrowDown",
     gridSize: 16,
-    gridHeight: 800,
-    gridWidth: 800,
+    gridHeight: 960,
+    gridWidth: 1920,
     collision: {HEAD_TO_HEAD: 0, HEAD_TO_BODY: 1, HEAD_TO_WALL: 2 }
 };
 

@@ -26,10 +26,15 @@ app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(bodyParser.json());
 
-app.get('/', (req, res)=> {
+app.get('/', (req, res) => {
     res.sendFile(__dirname + '/client/index.html');
 });
-
+app.get('/game/:id', (req, res) => {
+    if (LOBBY_LIST.has(req.params.id))
+        res.sendFile(__dirname + "/client/game.html");
+    else
+        res.sendFile(__dirname + '/client/index.html');
+});
 app.use(express.static(__dirname + '/client'));
 
 /*// catch 404 and forward to error handler
@@ -38,7 +43,7 @@ app.use(function (req, res, next) {
 });*/
 
 // error handler
-app.use((err, req, res, next)=> {
+app.use((err, req, res, next) => {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -48,18 +53,13 @@ app.use((err, req, res, next)=> {
     res.render('error');
 });
 
-//Listen for post data
-app.post('/',(request, res)=>{
-    res.sendFile(__dirname + '/client/index.html');
-    console.log(request.body.username);
-});
 
 http.listen(80, function () {
     console.log('listening on *:80');
 });
 
 const SOCKET_LIST = new Map();
-
+const LOBBY_LIST = new Map();
 
 let food = new Food();
 io.on('connection', (socket) => {
@@ -76,20 +76,18 @@ io.on('connection', (socket) => {
     let foodObj = {x: food.x, y: food.y};
     socket.emit('updateFood', foodObj);
     let initObj = {scale: CONSTANTS.gridSize};
-    socket.emit('init',  initObj);
+    socket.emit('init', initObj);
     socket.on('keyPress', (data) => {
-
         const player = socket.player;
         player.direction = data;
     });
 });
-const removePlayer = (player)=>{
+const removePlayer = (player) => {
     SOCKET_LIST.delete(player.id);
 };
-//Set the game tick to 25fps
+//Set the game tick to 15fps
 setInterval(() => {
     let segment = [];
-    let updateFood = false;
     for (let socket of SOCKET_LIST.values()) {
         let player = socket.player;
 
@@ -98,22 +96,19 @@ setInterval(() => {
             removePlayer(player);
             socket.emit('death', player.score);
             //Player hits food
-        }else if(player.snake[0].x === food.x && player.snake[0].y === food.y){
+        } else if (player.snake[0].x === food.x && player.snake[0].y === food.y) {
             food.generateRandom();
             player.bodyLength++;
             player.score++;
             player.hasEaten(true);
-            updateFood = true;
-        }
-        if(updateFood){
-            socket.emit('updateFood', {x: food.x, y: food.y, id: player.id});
+            io.emit('updateFood', {x: food.x, y: food.y});
         }
         let collisionSelf = Environment.hitsSelf(player);
-        let collisionOther = Environment.hitsOther(player,  SOCKET_LIST.values());
+        let collisionOther = Environment.hitsOther(player, SOCKET_LIST.values());
         let hitsSelf = collisionSelf.isCollision;
         let hitsOther = collisionOther.isCollision;
-        if(hitsSelf || hitsOther){
-            if(hitsOther){
+        if (hitsSelf || hitsOther) {
+            if (hitsOther) {
                 console.log(collisionOther.otherPlayer);
                 SOCKET_LIST.get(collisionOther.otherPlayer.id).emit('death', collisionOther.otherPlayer.score);
                 removePlayer(collisionOther.otherPlayer);
@@ -130,4 +125,4 @@ setInterval(() => {
     }
 
 
-}, 1000 / 20);
+}, 1000 / 15);
