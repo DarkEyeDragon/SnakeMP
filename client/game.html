@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="game.css">
+    <link rel="stylesheet" href="/css/game.css">
 </head>
 <body>
 <!--<ol id="playerList">
@@ -12,11 +12,10 @@
 <canvas id="canvas" style="background-color: antiquewhite" width="1920" height="960">
 </canvas>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
-<script src="js/userInput.js" type="module"></script>
-<script src="js/rendering.js" type="module"></script>
+<script src="/js/userInput.js" type="module"></script>
+<script src="/js/rendering.js" type="module"></script>
 <script>
     const socket = io();
-    socket.emit("startGame");
 </script>
 </body>
 </html>

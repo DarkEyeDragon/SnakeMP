@@ -27,13 +27,19 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/client/index.html');
+    res.sendFile(__dirname + '/client');
 });
+app.get('/generateid', (req, res) => {
+    res.redirect("game/12345");
+});
+
+
 app.get('/game/:id', (req, res) => {
+    console.log(LOBBY_LIST);
     if (LOBBY_LIST.has(req.params.id))
-        res.sendFile(__dirname + "/client/game.html");
+        res.sendFile(__dirname + '/client/game.html');
     else
-        res.sendFile(__dirname + '/client/index.html');
+        res.redirect('/');
 });
 app.use(express.static(__dirname + '/client'));
 
@@ -54,29 +60,36 @@ app.use((err, req, res, next) => {
 });
 
 
-http.listen(80, function () {
-    console.log('listening on *:80');
+http.listen(3000, function () {
+    console.log('listening on *:3000');
 });
 
 const SOCKET_LIST = new Map();
 const LOBBY_LIST = new Map();
-
+LOBBY_LIST.set("12345", null);
 let food = new Food();
 io.on('connection', (socket) => {
+    console.log("Player connected on " + socket.id);
+    socket.on('clientReady', () => {
+        let foodObj = {x: food.x, y: food.y};
+        let initObj = {scale: CONSTANTS.gridSize, food: foodObj};
+        socket.emit('init', initObj);
+        console.log(initObj);
+    });
 
     let unique = uniqueId();
     let playerPosition = Environment.startPosition(SOCKET_LIST.values());
-    console.log(playerPosition);
     socket.player = new Player(unique, unique, playerPosition.x, playerPosition.y, color());
     SOCKET_LIST.set(unique, socket);
     socket.on('disconnect', () => {
-        removePlayer(socket.player)
+        removePlayer(socket.player);
+        console.log(socket.player.id + "disconnected");
+        /*if(SOCKET_LIST.size === 0){
+            clearInterval(gameLoop);
+        }*/
     });
 
-    let foodObj = {x: food.x, y: food.y};
-    socket.emit('updateFood', foodObj);
-    let initObj = {scale: CONSTANTS.gridSize};
-    socket.emit('init', initObj);
+
     socket.on('keyPress', (data) => {
         const player = socket.player;
         player.direction = data;
@@ -86,7 +99,7 @@ const removePlayer = (player) => {
     SOCKET_LIST.delete(player.id);
 };
 //Set the game tick to 15fps
-setInterval(() => {
+const gameLoop = setInterval(() => {
     let segment = [];
     for (let socket of SOCKET_LIST.values()) {
         let player = socket.player;
@@ -109,7 +122,6 @@ setInterval(() => {
         let hitsOther = collisionOther.isCollision;
         if (hitsSelf || hitsOther) {
             if (hitsOther) {
-                console.log(collisionOther.otherPlayer);
                 SOCKET_LIST.get(collisionOther.otherPlayer.id).emit('death', collisionOther.otherPlayer.score);
                 removePlayer(collisionOther.otherPlayer);
             }
@@ -121,7 +133,6 @@ setInterval(() => {
     }
     for (let socket of SOCKET_LIST.values()) {
         socket.emit('gameTick', segment);
-        console.log(JSON.stringify(segment));
     }
 
 
