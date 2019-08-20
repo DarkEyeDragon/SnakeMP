@@ -16,7 +16,7 @@ class Player{
             x: x,
             y: y
         };
-        this.bodyLength = 1;
+        this.bodyLength = this.snake.length;
         this.score = 0;
         this.direction = null;
         this.color = color;
@@ -48,6 +48,7 @@ class Player{
     }
     hasEaten(value){
         hasEaten = value;
+        this.bodyLength = this.snake.length;
     }
 }
 module.exports = Player;

@@ -21,34 +21,36 @@ class Environment {
         return collision;
     }
 
-    static hitsOther(player, socketList) {
-        for (let socket of socketList) {
-            let target = socket.player;
-            if(!(target === player)) {
-                const playerHead = player.snake[0];
-                const targetHead = target.snake[0];
-                if (playerHead.x === targetHead.x && playerHead.y === targetHead.y) {
-                    let collision = new Collision(CONSTANTS.collision.HEAD_TO_HEAD);
-                    collision.location = {x: playerHead.x, y: playerHead.y};
-                    collision.otherPlayer = target;
+//Check if you're hitting someones body, if so, you die.
+static hitsOther(player, socketList) {
+    for (let socket of socketList) {
+        let target = socket.player;
+        if(player !== target) {
+            console.log(player);
+            const playerHead = player.snake[0];
+            const targetHead = target.snake[0];
+            if (playerHead.x === targetHead.x && playerHead.y === targetHead.y) {
+                let collision = new Collision(CONSTANTS.collision.HEAD_TO_HEAD);
+                collision.location = {x: playerHead.x, y: playerHead.y};
+                collision.player = player;
+                collision.target = target;
+                return collision;
+            }
+            for (let i = 0; i < target.snake.length; i++) {
+                if(playerHead.x === target.snake[i].x && playerHead.y === target.snake[i].y){
+                    let collision = new Collision(CONSTANTS.collision.HEAD_TO_BODY);
+                    collision.location = {x: target.snake[i].x, y: target.snake[i].y};
+                    collision.target = target;
+                    collision.player = player;
                     return collision;
-                }
-                for (let i = 1; i < player.snake.length; i++) {
-                    for (let j = 1; j < target.snake.length; j++) {
-                        if (player.snake[i].x === target.snake[j].x && player.snake[i].y === target.snake[j].y) {
-                            let collision = new Collision(CONSTANTS.collision.HEAD_TO_BODY);
-                            collision.location = {x: player.snake[i].x, y: player.snake[i].y};
-                            collision.otherPlayer = target;
-                            return collision
-                        }
-                    }
                 }
             }
         }
-        let collision = new Collision(CONSTANTS.collision.HEAD_TO_BODY);
-        collision.isCollision = false;
-        return collision;
     }
+    let collision = new Collision(CONSTANTS.collision.HEAD_TO_BODY);
+    collision.isCollision = false;
+    return collision;
+}
 
     static getRanLocation() {
         return {

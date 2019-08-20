@@ -13,14 +13,20 @@
 <body>
 <h1>Snek - The multiplayer snake</h1>
 <div class="small-container">
-    <a class="btn" href="/generateid"><span>Join game</span></a>
-    <section hidden class="toggleable">
+    <form method="post" action="/joingame">
         <label>
-            Join a game using its url or id
-            <input placeholder="url or game id">
+            Join a game using it's url or id
+            <input placeholder="game id" name="gameId">
         </label>
-    </section>
-    <button class="btn"><span>Create game</span></button>
+        <button class="btn" type="submit"><span>Join game</span></button>
+    </form>
+    <form method="post" action="/generateid">
+        <!--<label>
+            Your lobby name
+            <input placeholder="game id" name="">
+        </label>-->
+        <input class="btn" type="submit" value="Create Game"/>
+    </form>
 </div>
 </body>
 </html>

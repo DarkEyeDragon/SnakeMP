@@ -21,18 +21,24 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({extended: false}));
-app.use(cookieParser());
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/client');
 });
 app.get('/generateid', (req, res) => {
-    res.redirect("game/12345");
+    console.log(req.body);
+    //if(LOBBY_LIST.has())
+    //res.redirect("game/12345");
 });
-
+app.post('/joingame', (req, res) => {
+    console.log(req.body);
+    if(LOBBY_LIST.has(req.body.gameId)){
+        res.redirect(`game/${req.body.gameId}`);
+    }
+});
 
 app.get('/game/:id', (req, res) => {
     console.log(LOBBY_LIST);
@@ -64,9 +70,22 @@ http.listen(3000, function () {
     console.log('listening on *:3000');
 });
 
+//Create a little noob bot to test collisions
+let bot = new Player("bot", "Bot Mohammed", 16 * 6, 16 * 6, "black");
+bot.snake[1] = {x: 16 * 5, y: 16 * 6};
+bot.snake[2] = {x: 16 * 4, y: 16 * 6};
+bot.snake[3] = {x: 16 * 3, y: 16 * 6};
+bot.snake[4] = {x: 16 * 2, y: 16 * 6};
+bot.snake[5] = {x: 16, y: 16 * 6};
+
 const SOCKET_LIST = new Map();
 const LOBBY_LIST = new Map();
+const BOT_LIST = new Map();
+const FOOD_LIST = [];
+
+
 LOBBY_LIST.set("12345", null);
+BOT_LIST.set("bot", {player: bot, id: bot.id});
 let food = new Food();
 io.on('connection', (socket) => {
     console.log("Player connected on " + socket.id);
@@ -74,7 +93,6 @@ io.on('connection', (socket) => {
         let foodObj = {x: food.x, y: food.y};
         let initObj = {scale: CONSTANTS.gridSize, food: foodObj};
         socket.emit('init', initObj);
-        console.log(initObj);
     });
 
     let unique = uniqueId();
@@ -96,14 +114,16 @@ io.on('connection', (socket) => {
     });
 });
 const removePlayer = (player) => {
-    SOCKET_LIST.delete(player.id);
+    return SOCKET_LIST.delete(player.id);
+};
+const removeBot = (bot) => {
+    return BOT_LIST.delete(bot.id);
 };
 //Set the game tick to 15fps
 const gameLoop = setInterval(() => {
     let segment = [];
     for (let socket of SOCKET_LIST.values()) {
         let player = socket.player;
-
         //Player hits border
         if (Environment.hitsBorder(player)) {
             removePlayer(player);
@@ -120,16 +140,42 @@ const gameLoop = setInterval(() => {
         let collisionOther = Environment.hitsOther(player, SOCKET_LIST.values());
         let hitsSelf = collisionSelf.isCollision;
         let hitsOther = collisionOther.isCollision;
-        if (hitsSelf || hitsOther) {
-            if (hitsOther) {
-                SOCKET_LIST.get(collisionOther.otherPlayer.id).emit('death', collisionOther.otherPlayer.score);
-                removePlayer(collisionOther.otherPlayer);
+
+        let collisionBot = Environment.hitsOther(player, BOT_LIST.values());
+        let hitsBot = collisionBot.isCollision;
+        if (hitsOther) {
+            if (collisionOther.type === CONSTANTS.collision.HEAD_TO_BODY) {
+                socket.broadcast.emit('playerdeath', collisionOther);
+                SOCKET_LIST.get(collisionOther.target.id).emit('death', collisionOther.target.score);
+                removePlayer(collisionOther.player);
+                console.log("Hit other - head to body");
+            } else if (collisionOther.type === CONSTANTS.collision.HEAD_TO_HEAD) {
+                removePlayer(collisionOther.player);
+                removePlayer(collisionOther.target);
+                console.log("Hit other - head to head");
+                socket.emit('death', player.score);
             }
+        } else if (hitsBot) {
+            if (collisionBot.type === CONSTANTS.collision.HEAD_TO_BODY) {
+                socket.broadcast.emit('playerdeath', collisionOther);
+                removePlayer(collisionBot.player);
+                console.log("Hit bot - head to body");
+            } else if (collisionBot.type === CONSTANTS.collision.HEAD_TO_HEAD) {
+                removePlayer(collisionBot.player);
+                removeBot(collisionBot.target);
+                socket.emit('death', player.score);
+                console.log("Hit bot - head to head");
+            }
+        } else if (hitsSelf) {
             removePlayer(player);
             socket.emit('death', player.score);
         }
         player.updatePosition();
         segment.push(player);
+
+    }
+    for (let bot of BOT_LIST.values()) {
+        segment.push(bot.player);
     }
     for (let socket of SOCKET_LIST.values()) {
         socket.emit('gameTick', segment);
