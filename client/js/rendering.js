@@ -15,7 +15,6 @@ window.onload = function () {
     let food;
     let isSetup = false;
 
-    let playerFeed = [];
     let resourceHandler = new ResourceHandler();
     resourceHandler.loadImages();
     socket.on("gameTick", (data) => {
@@ -33,11 +32,22 @@ window.onload = function () {
         food.draw();
     });
     socket.on('init', (initData) => {
+
+        document.getElementById('game_popup').style.display = 'none';
+
         SCALE = initData.scale;
         food = new Food(ctx, initData.food.x, initData.food.y);
         isSetup = true;
     });
-    socket.emit('clientReady');
+    socket.on('game_error', (errorMessage)=>{
+        let domError = document.getElementById('game_error');
+        domError.innerHTML = errorMessage;
+        domError.style.display = 'block';
+        setTimeout(()=> {
+            domError.style.display = 'none';
+        }, 1500);
+
+    });
 
     socket.on('playerdeath', (data) => {
         console.log(data);

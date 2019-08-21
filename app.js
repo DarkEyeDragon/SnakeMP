@@ -10,6 +10,7 @@ const color = require('rcolor');
 const Environment = require("./server/environment");
 const Food = require("./server/food");
 const bodyParser = require("body-parser");
+const InputValidation = require("./server/inputvalidation");
 
 const app = express();
 
@@ -35,8 +36,10 @@ app.get('/generateid', (req, res) => {
 });
 app.post('/joingame', (req, res) => {
     console.log(req.body);
-    if(LOBBY_LIST.has(req.body.gameId)){
+    if (LOBBY_LIST.has(req.body.gameId)) {
         res.redirect(`game/${req.body.gameId}`);
+    } else {
+        res.redirect("/");
     }
 });
 
@@ -71,12 +74,12 @@ http.listen(3000, function () {
 });
 
 //Create a little noob bot to test collisions
-let bot = new Player("bot", "Bot Mohammed", 16 * 6, 16 * 6, "black");
+/*let bot = new Player("bot", "Bot Mohammed", 16 * 6, 16 * 6, "black");
 bot.snake[1] = {x: 16 * 5, y: 16 * 6};
 bot.snake[2] = {x: 16 * 4, y: 16 * 6};
 bot.snake[3] = {x: 16 * 3, y: 16 * 6};
 bot.snake[4] = {x: 16 * 2, y: 16 * 6};
-bot.snake[5] = {x: 16, y: 16 * 6};
+bot.snake[5] = {x: 16, y: 16 * 6};*/
 
 const SOCKET_LIST = new Map();
 const LOBBY_LIST = new Map();
@@ -85,32 +88,36 @@ const FOOD_LIST = [];
 
 
 LOBBY_LIST.set("12345", null);
-BOT_LIST.set("bot", {player: bot, id: bot.id});
+//BOT_LIST.set("bot", {player: bot, id: bot.id});
 let food = new Food();
 io.on('connection', (socket) => {
     console.log("Player connected on " + socket.id);
-    socket.on('clientReady', () => {
-        let foodObj = {x: food.x, y: food.y};
-        let initObj = {scale: CONSTANTS.gridSize, food: foodObj};
-        socket.emit('init', initObj);
-    });
+    socket.on('clientReady', (username) => {
+        if(SOCKET_LIST.has(socket.id)) return;
+        if(InputValidation.isValidUsername(username)){
+            let foodObj = {x: food.x, y: food.y};
+            let initObj = {scale: CONSTANTS.gridSize, food: foodObj};
+            socket.emit('init', initObj);
+        }else{
+            socket.emit('game_error', CONSTANTS.ERRORS.INVALID_USERNAME);
+            return;
+        }
 
-    let unique = uniqueId();
-    let playerPosition = Environment.startPosition(SOCKET_LIST.values());
-    socket.player = new Player(unique, unique, playerPosition.x, playerPosition.y, color());
-    SOCKET_LIST.set(unique, socket);
-    socket.on('disconnect', () => {
-        removePlayer(socket.player);
-        console.log(socket.player.id + "disconnected");
-        /*if(SOCKET_LIST.size === 0){
-            clearInterval(gameLoop);
-        }*/
-    });
+        let playerPosition = Environment.startPosition(SOCKET_LIST.values());
+        socket.player = new Player(socket.id, username, playerPosition.x, playerPosition.y, color());
+        SOCKET_LIST.set(socket.id, socket);
+        socket.on('disconnect', () => {
+            removePlayer(socket.player);
+            console.log(socket.player.id + "disconnected");
+            /*if(SOCKET_LIST.size === 0){
+                clearInterval(gameLoop);
+            }*/
+        });
 
-
-    socket.on('keyPress', (data) => {
-        const player = socket.player;
-        player.direction = data;
+        socket.on('keyPress', (data) => {
+            const player = socket.player;
+            player.direction = data;
+        });
     });
 });
 const removePlayer = (player) => {

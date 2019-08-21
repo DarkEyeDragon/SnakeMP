@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/game.css">
 </head>
 <body>
-<!--<ol id="playerList">
-
-</ol>-->
+<p id="game_error">
+</p>
+<div class="background_blur" id="game_popup">
+    <div class="popup">
+        <section class="popup_content">
+            <h1>Choose your username</h1>
+            <input id="username" type="text" required placeholder="Username" min="3" max="24">
+            <button type="submit" class="btn" onclick="joinGame()"><span>Join</span></button>
+        </section>
+    </div>
+</div>
 <canvas id="canvas" style="background-color: antiquewhite" width="1920" height="960">
 </canvas>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
@@ -16,6 +25,20 @@
 <script src="/js/rendering.js" type="module"></script>
 <script>
     const socket = io();
+    //Set last used username if present
+    let domUsername = document.getElementById('username');
+    const cached_username =  localStorage.getItem("snake_username");
+    if(cached_username !== undefined){
+        domUsername.value = cached_username;
+    }
+
+    let joinGame = () => {
+        const username =  domUsername.value;
+        socket.emit('clientReady', username);
+        localStorage.setItem("snake_username", username);
+        return false;
+    };
+
 </script>
 </body>
 </html>

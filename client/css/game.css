@@ -1,6 +1,7 @@
 body{
     margin: 0;
     padding: 0;
+    font-family: 'Montserrat', sans-serif;
 }
 canvas, img {
     display: block;
@@ -10,4 +11,40 @@ canvas, img {
     image-rendering: -moz-crisp-edges;
     image-rendering: pixelated;
     -ms-interpolation-mode: nearest-neighbor;
+}
+.popup{
+    position: fixed;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    min-width: 300px;
+    min-height: 140px;
+    border-radius: 5px;
+    border: 1px solid darkgray;
+    background-color: white;
+}
+.popup > .popup_content{
+    margin: 15px;
+}
+.background_blur{
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(0,0,0, 0.6);
+}
+#game_error{
+    margin: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #CD3526;
+    padding: 10px;
+    display: none;
+    z-index: 100;
+    width: 100vw;
+    color: white;
+    font-size: 1.2em;
+    text-align: center;
 }
