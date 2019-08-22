@@ -50,7 +50,6 @@ window.onload = function () {
     });
 
     socket.on('playerdeath', (data) => {
-        console.log(data);
         if (data.type === 1) {
 
         }

@@ -26,7 +26,6 @@ static hitsOther(player, socketList) {
     for (let socket of socketList) {
         let target = socket.player;
         if(player !== target) {
-            console.log(player);
             const playerHead = player.snake[0];
             const targetHead = target.snake[0];
             if (playerHead.x === targetHead.x && playerHead.y === targetHead.y) {

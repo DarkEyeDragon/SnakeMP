@@ -5,7 +5,6 @@ export default class Menu{
         this.buttonArray = [];
     }
     addText(text, x, y, fontsize = 14, color = "black"){
-        console.log(color);
         this.textArray.push({text : text, x: x, y:y, fontsize: fontsize, color: color});
     }
     addButton(text, x, y, width, height){
