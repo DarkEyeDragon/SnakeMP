@@ -74,12 +74,12 @@ http.listen(3000, function () {
 });
 
 //Create a little noob bot to test collisions
-/*let bot = new Player("bot", "Bot Mohammed", 16 * 6, 16 * 6, "black");
+let bot = new Player("bot", "Bot Mohammed", 16 * 6, 16 * 6, "black");
 bot.snake[1] = {x: 16 * 5, y: 16 * 6};
 bot.snake[2] = {x: 16 * 4, y: 16 * 6};
 bot.snake[3] = {x: 16 * 3, y: 16 * 6};
 bot.snake[4] = {x: 16 * 2, y: 16 * 6};
-bot.snake[5] = {x: 16, y: 16 * 6};*/
+bot.snake[5] = {x: 16, y: 16 * 6};
 
 const SOCKET_LIST = new Map();
 const LOBBY_LIST = new Map();
@@ -93,12 +93,12 @@ let food = new Food();
 io.on('connection', (socket) => {
     console.log("Player connected on " + socket.id);
     socket.on('clientReady', (username) => {
-        if(SOCKET_LIST.has(socket.id)) return;
-        if(InputValidation.isValidUsername(username)){
+        if (SOCKET_LIST.has(socket.id)) return;
+        if (InputValidation.isValidUsername(username)) {
             let foodObj = {x: food.x, y: food.y};
             let initObj = {scale: CONSTANTS.gridSize, food: foodObj};
             socket.emit('init', initObj);
-        }else{
+        } else {
             socket.emit('game_error', CONSTANTS.ERRORS.INVALID_USERNAME);
             return;
         }
@@ -126,67 +126,41 @@ const removePlayer = (player) => {
 const removeBot = (bot) => {
     return BOT_LIST.delete(bot.id);
 };
+
+
 //Set the game tick to 15fps
 const gameLoop = setInterval(() => {
     let segment = [];
+
     for (let socket of SOCKET_LIST.values()) {
         let player = socket.player;
-        //Player hits border
-        if (Environment.hitsBorder(player)) {
-            removePlayer(player);
-            socket.emit('death', player.score);
-            //Player hits food
-        } else if (player.snake[0].x === food.x && player.snake[0].y === food.y) {
-            food.generateRandom();
-            player.bodyLength++;
-            player.score++;
-            player.hasEaten(true);
-            io.emit('updateFood', {x: food.x, y: food.y});
-        }
-        let collisionSelf = Environment.hitsSelf(player);
-        let collisionOther = Environment.hitsOther(player, SOCKET_LIST.values());
-        let hitsSelf = collisionSelf.isCollision;
-        let hitsOther = collisionOther.isCollision;
 
-        let collisionBot = Environment.hitsOther(player, BOT_LIST.values());
-        let hitsBot = collisionBot.isCollision;
-        if (hitsOther) {
-            if (collisionOther.type === CONSTANTS.collision.HEAD_TO_BODY) {
-                socket.broadcast.emit('playerdeath', collisionOther);
-                SOCKET_LIST.get(collisionOther.target.id).emit('death', collisionOther.target.score);
-                removePlayer(collisionOther.player);
-                console.log("Hit other - head to body");
-            } else if (collisionOther.type === CONSTANTS.collision.HEAD_TO_HEAD) {
-                removePlayer(collisionOther.player);
-                removePlayer(collisionOther.target);
-                console.log("Hit other - head to head");
-                socket.emit('death', player.score);
-            }
-        } else if (hitsBot) {
-            if (collisionBot.type === CONSTANTS.collision.HEAD_TO_BODY) {
-                socket.broadcast.emit('playerdeath', collisionOther);
-                removePlayer(collisionBot.player);
-                console.log("Hit bot - head to body");
-            } else if (collisionBot.type === CONSTANTS.collision.HEAD_TO_HEAD) {
-                removePlayer(collisionBot.player);
-                removeBot(collisionBot.target);
-                socket.emit('death', player.score);
-                console.log("Hit bot - head to head");
-            }
-        } else if (hitsSelf) {
-            removePlayer(player);
+        //Player collides with himself or the wall.
+        if (player.collided()) {
             socket.emit('death', player.score);
+            removePlayer(player);
+        } else {
+            //Player collides with someone else
+            let collided = player.collidedOther(SOCKET_LIST.values());
+            if (collided !== null) {
+                socket.emit('death', player.score);
+                collided.emit('death', collided.player.score);
+                removePlayer(player);
+                removePlayer(collided.player);
+
+            } else if (player.snake[0].x === food.x && player.snake[0].y === food.y) {
+                //Player hits food
+                food.generateRandom();
+                player.bodyLength++;
+                player.hasEaten(true);
+                io.emit('updateFood', {x: food.x, y: food.y});
+            }
         }
         player.updatePosition();
         segment.push(player);
 
     }
-    for (let bot of BOT_LIST.values()) {
-        segment.push(bot.player);
-    }
     for (let socket of SOCKET_LIST.values()) {
         socket.emit('gameTick', segment);
     }
-
-
 }, 1000 / 15);
