@@ -43,14 +43,16 @@ class Player{
     }
 
     /*check collisions with other players*/
-    collidedOther(socket){
-        for (let playerIndex = 0; playerIndex < socket.length; playerIndex++) {
-            for (let otherSnakeIndex = 0; otherSnakeIndex < socket[playerIndex].player.snake.length; otherSnakeIndex++) {
-                for (let selfSnakeIndex = 0; selfSnakeIndex < this.snake.length; selfSnakeIndex++) {
-                    let otherSnake = socket[playerIndex].player.snake;
-                    let thisSnake = this.snake;
-                    if(otherSnake[otherSnakeIndex].x === thisSnake[selfSnakeIndex].x && otherSnake[otherSnakeIndex].y === thisSnake[selfSnakeIndex].y){
-                        return socket[playerIndex];
+    collidedOther(socketList){
+        for (let socket of socketList){
+            let player = socket.player;
+            for (let snakeBodyPart of this.snake ){
+                for (let otherSnakeBodyPart of player.snake){
+                    if(player.id === this.id){
+                        break;
+                    }
+                    if(snakeBodyPart.x === otherSnakeBodyPart.x && snakeBodyPart.y === otherSnakeBodyPart.y){
+                        return socket;
                     }
                 }
             }
