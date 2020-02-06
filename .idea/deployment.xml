@@ -7,6 +7,9 @@
           <mappings>
             <mapping deploy="/home/darkeyedragon/snek" local="$PROJECT_DIR$" web="/" />
           </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/.idea" />
+          </excludedPaths>
         </serverdata>
       </paths>
     </serverData>
