@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" uploadOnCheckin="78b8e054-269f-4de8-8dd6-49e51a65763a">
+    <serverData>
+      <paths name="darkeyedragon.me">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/darkeyedragon/snek" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myUploadOnCheckinName" value="darkeyedragon.me" />
+  </component>
+</project>
