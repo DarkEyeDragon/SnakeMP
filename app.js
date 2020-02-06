@@ -25,6 +25,7 @@ app.use(logger('dev'));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "public")));
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/client');
@@ -52,10 +53,10 @@ app.get('/game/:id', (req, res) => {
 });
 app.use(express.static(__dirname + '/client'));
 
-/*// catch 404 and forward to error handler
+// catch 404 and forward to error handler
 app.use(function (req, res, next) {
     next(createError(404));
-});*/
+});
 
 // error handler
 app.use((err, req, res, next) => {
